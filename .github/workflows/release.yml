@@ -32,13 +32,25 @@ jobs:
         run: |
           GOOS=windows GOARCH=amd64 go build -o build/fortune-windows.exe fortune.go
 
+      - name: Delete existing latest tag if exists
+        run: |
+          git tag -d latest || true
+          git push origin :refs/tags/latest || true
+
+      - name: Create latest tag
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git tag latest
+          git push origin latest
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: main-commit-${{ github.run_number }}
-          name: "Build from main #${{ github.run_number }}"
+          tag_name: latest
+          name: "Latest Release"
           draft: false
-          prerelease: true  # or false if you want it to be a normal release
+          prerelease: false
           files: |
             build/fortune-linux
             build/fortune-windows.exe
