@@ -31,7 +31,7 @@ func join(strArr []string) string {
 
 func main() {
 	// ====> OPEN THE FILE AND DEFER
-	file, err := os.Open("./fortune.txt")
+	file, err := os.Open("./fortunes.txt")
 	if err != nil {
 		fmt.Println("Error opening file", err)
 		return
