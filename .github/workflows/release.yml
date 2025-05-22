@@ -26,11 +26,11 @@ jobs:
 
       - name: Build Linux binary
         run: |
-          GOOS=linux GOARCH=amd64 go build -o build/fortune-linux fortune.go
+          GOOS=linux GOARCH=amd64 go build -o build/fortune fortune.go
 
       - name: Build Windows binary
         run: |
-          GOOS=windows GOARCH=amd64 go build -o build/fortune-windows.exe fortune.go
+          GOOS=windows GOARCH=amd64 go build -o build/fortune.exe fortune.go
 
       - name: Delete existing latest tag if exists
         run: |
@@ -52,8 +52,8 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            build/fortune-linux
-            build/fortune-windows.exe
+            build/fortune
+            build/fortune.exe
             build/fortunes.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
