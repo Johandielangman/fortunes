@@ -42,6 +42,6 @@ jobs:
           files: |
             build/fortune-linux
             build/fortune-windows.exe
-            build/fortune.txt
+            build/fortunes.txt
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
