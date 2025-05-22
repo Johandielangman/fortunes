@@ -1,0 +1,47 @@
+name: Build and Release Fortune App
+
+on:
+  push:
+    branches:
+      - main  # Runs on every push to main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Make build directory
+        run: mkdir -p build
+
+      - name: Copy fortune
+        run: cp fortune.txt build/
+
+      - name: Build Linux binary
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o build/fortune-linux fortune.go
+
+      - name: Build Windows binary
+        run: |
+          GOOS=windows GOARCH=amd64 go build -o build/fortune-windows.exe fortune.go
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: main-commit-${{ github.run_number }}
+          name: "Build from main #${{ github.run_number }}"
+          draft: false
+          prerelease: true  # or false if you want it to be a normal release
+          files: |
+            build/fortune-linux
+            build/fortune-windows.exe
+            build/fortune.txt
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
