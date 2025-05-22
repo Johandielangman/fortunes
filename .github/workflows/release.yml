@@ -22,7 +22,7 @@ jobs:
         run: mkdir -p build
 
       - name: Copy fortune
-        run: cp fortune.txt build/
+        run: cp fortunes.txt build/
 
       - name: Build Linux binary
         run: |
