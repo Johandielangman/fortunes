@@ -1,4 +1,4 @@
-name: Build and Release Fortune App
+name: Johandielangman's Fortunes
 
 on:
   push:
@@ -18,10 +18,10 @@ jobs:
         with:
           go-version: '1.22'
 
-      - name: Make build directory
+      - name: Set a build directory
         run: mkdir -p build
 
-      - name: Copy fortune
+      - name: Copy fortunes over
         run: cp fortunes.txt build/
 
       - name: Build Linux binary
