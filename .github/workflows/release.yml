@@ -19,10 +19,10 @@ jobs:
           go-version: '1.22'
 
       - name: Set a build directory
-        run: mkdir -p build
+        run: mkdir -p build/fortunes
 
       - name: Copy fortunes over
-        run: cp fortunes.txt build/
+        run: cp fortunes/* build/fortunes
 
       - name: Build Linux binary
         run: |
@@ -52,8 +52,6 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            build/fortune
-            build/fortune.exe
-            build/fortunes.txt
+            build/*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

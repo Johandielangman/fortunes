@@ -11,60 +11,101 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
+	"log"
 	"math/rand"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
-// =============== // CONSTANTS // ===============
-
-var fortunes []string
-var par []string
-
-// =============== // HELPER FUNCTIONS // ===============
-
-func join(strArr []string) string {
-	return strings.Join(strArr, "\n")
+func dirExists(path string) (bool, error) {
+	if _, err := os.Stat(path); err == nil {
+		return true, nil
+	} else if os.IsNotExist(err) {
+		return false, nil
+	} else {
+		return false, err
+	}
 }
 
-func main() {
-	// ====> OPEN THE FILE AND DEFER
-	file, err := os.Open("./fortunes.txt")
+func listFortuneFiles(path string) []string {
+	var fortuneFiles []string
+
+	items, err := os.ReadDir(path)
 	if err != nil {
-		fmt.Println("Error opening file", err)
-		return
+		log.Fatal(err)
 	}
-	defer file.Close()
+	for _, item := range items {
+		if !item.IsDir() && strings.HasSuffix(item.Name(), ".txt") {
+			fortuneFiles = append(fortuneFiles, item.Name())
+		}
+	}
+	return fortuneFiles
+}
 
-	// ====> CREATE A SCANNER AND READ THE FILE LINE BY LINE
-	scanner := bufio.NewScanner(file)
+func chooseRandomElement(slice []string) string {
+	return slice[rand.Intn(len(slice))]
+}
 
-	for scanner.Scan() {
-		line := scanner.Text()
-		switch line {
-		case "---":
-			if len(par) > 0 {
-				fortunes = append(fortunes, join(par))
-				par = []string{}
+func readFortunes(path string) []string {
+	var (
+		fortunes []string
+		chunk    []string
+	)
+
+	rawFile, err := os.ReadFile(path)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Damn Windows
+	rawFileString := strings.ReplaceAll(string(rawFile), "\r\n", "\n")
+
+	lines := strings.Split(rawFileString, "\n")
+
+	for _, line := range lines {
+		if strings.TrimSpace(line) == "%" {
+			// To account for a % at the top with no content above it
+			if len(chunk) > 0 {
+				// Rebuild the par and add to the final slice
+				fortunes = append(fortunes, strings.Join(chunk, "\n"))
+
+				// reset
+				chunk = []string{}
 			}
-		default:
-			if strings.TrimSpace(line) != "" {
-				par = append(par, line)
-			}
+		} else {
+			// we're still building the chunk
+			chunk = append(chunk, line)
 		}
 	}
 
-	// ====> TO ACCOUNT FOR THE FACT THAT THERE IS NO "---" AT THE END OF THE FILE
-	if len(par) > 0 {
-		fortunes = append(fortunes, join(par))
+	// account for if there is no % at the very end of the file
+	if len(chunk) > 0 {
+		fortunes = append(fortunes, strings.Join(chunk, "\n"))
+	}
+	return fortunes
+}
+
+func main() {
+	// DECLARE SOME VARIABLES
+	FORTUNE_COLLECTION_DIR := "fortunes"
+
+	// ====> CHECK TO MAKE SURE THE FORTUNE DIRECORY EXISTS
+	if exists, err := dirExists(FORTUNE_COLLECTION_DIR); err != nil {
+		log.Fatal(err)
+	} else if !exists {
+		log.Fatal("Could not find your fortune directory")
 	}
 
-	if err := scanner.Err(); err != nil {
-		fmt.Println("Error reading file", err)
-	}
+	// ====> GET A SLICE OF AVAILABLE FORTUNES
+	fortuneFiles := listFortuneFiles(FORTUNE_COLLECTION_DIR)
+	fortuneFile := chooseRandomElement(fortuneFiles)
 
-	// ====> GET A RANDOM ARRAY ELEMENT
-	fmt.Println(fortunes[rand.Intn(len(fortunes))])
+	// ====> READ IN ALL THE FORTUNES
+	fortunes := readFortunes(filepath.Join(FORTUNE_COLLECTION_DIR, fortuneFile))
+
+	// ====> THE FINAL OUTPUT PASSED TO COWSAY
+	fortune := chooseRandomElement(fortunes)
+	fmt.Println(fortune)
 }
